@@ -1,15 +1,12 @@
-# UseProxy
 
-```
 ██╗   ██╗███████╗███████╗██████╗ ██████╗  ██████╗ ██╗  ██╗██╗   ██╗
 ██║   ██║██╔════╝██╔════╝██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝╚██╗ ██╔╝
 ██║   ██║███████╗█████╗  ██████╔╝██████╔╝██║   ██║ ╚███╔╝  ╚████╔╝ 
 ██║   ██║╚════██║██╔══╝  ██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗   ╚██╔╝  
 ╚██████╔╝███████║███████╗██║     ██║  ██║╚██████╔╝██╔╝ ██╗   ██║   
  ╚═════╝ ╚══════╝╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-```
-
-UseProxy - это мощный инструмент для локальной разработки, который позволяет:
+ 
+UseProxy - это мощный инструмент, который позволяет:
 - 🔄 Проксировать API-запросы на другие сервера
 - 📁 Отдавать статические файлы
 - 🔒 Поддерживать HTTPS с самоподписанными сертификатами
@@ -20,14 +17,14 @@ UseProxy - это мощный инструмент для локальной р
 ### Windows (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/yourusername/useproxy/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/SomeMedic/useProxy/main/install.ps1 | iex
 ```
 
 ### Ручная установка
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/yourusername/useproxy.git
+git clone https://github.com/SomeMedic/useproxy.git
 cd useproxy
 ```
 
@@ -132,7 +129,3 @@ up run --config my-config.json
 - Windows 10/11
 - PowerShell 5.1 или выше
 - Rust 1.70.0 или выше (для ручной сборки)
-
-## Лицензия
-
-MIT 
