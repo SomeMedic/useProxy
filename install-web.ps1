@@ -15,20 +15,20 @@ New-Item -ItemType Directory -Path $tempDir | Out-Null
 Set-Location $tempDir
 
 # Скачиваем и распаковываем архив с GitHub
-Write-Host "Скачивание UseProxy..." -ForegroundColor Cyan
-$repo = "yourusername/useproxy"
+Write-Host "Downloading UseProxy..." -ForegroundColor Cyan
+$repo = "SomeMedic/useProxy"
 $latest = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
 $asset = $latest.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
 
 if ($asset) {
     $downloadUrl = $asset.browser_download_url
-    Invoke-WebRequest -Uri $downloadUrl -OutFile "useproxy.zip"
-    Expand-Archive "useproxy.zip" -DestinationPath "."
+    Invoke-WebRequest -Uri $downloadUrl -OutFile "useProxy.zip"
+    Expand-Archive "useProxy.zip" -DestinationPath "."
 } else {
-    Write-Host "Скачивание репозитория..." -ForegroundColor Cyan
-    Invoke-WebRequest -Uri "https://github.com/$repo/archive/main.zip" -OutFile "useproxy.zip"
-    Expand-Archive "useproxy.zip" -DestinationPath "."
-    Move-Item "useproxy-main/*" "." -Force
+    Write-Host "Downloading repository..." -ForegroundColor Cyan
+    Invoke-WebRequest -Uri "https://github.com/$repo/archive/main.zip" -OutFile "useProxy.zip"
+    Expand-Archive "useProxy.zip" -DestinationPath "."
+    Move-Item "useProxy-main/*" "." -Force
 }
 
 # Создаем директорию для установки
@@ -42,11 +42,11 @@ if (Test-Path "up.exe") {
     Copy-Item "up.exe" -Destination "$installDir\up.exe" -Force
 } else {
     # Если нет готового исполняемого файла, компилируем
-    Write-Host "Компиляция проекта..." -ForegroundColor Cyan
+    Write-Host "Compiling the project..." -ForegroundColor Cyan
     
     # Проверяем наличие Rust
     if (-not (Get-Command rustc -ErrorAction SilentlyContinue)) {
-        Write-Host "Установка Rust..." -ForegroundColor Yellow
+        Write-Host "Installing Rust..." -ForegroundColor Yellow
         Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile "rustup-init.exe"
         Start-Process -FilePath "rustup-init.exe" -ArgumentList "-y" -Wait
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
@@ -70,10 +70,10 @@ if ($currentPath -notlike "*$installDir*") {
 Set-Location $env:TEMP
 Remove-Item -Path $tempDir -Recurse -Force
 
-Write-Host "`nУстановка UseProxy завершена!" -ForegroundColor Green
-Write-Host "Теперь вы можете использовать команду 'up' из любого места" -ForegroundColor Green
-Write-Host "`nПримеры команд:" -ForegroundColor Cyan
+Write-Host "`nInstallation complete!" -ForegroundColor Green
+Write-Host "You can now use the 'up' command from anywhere" -ForegroundColor Green
+Write-Host "`nExamples of commands:" -ForegroundColor Cyan
 Write-Host "up run --https" -ForegroundColor Yellow
 Write-Host "up proxy add `"/api/chat -> https://api.example.com`"" -ForegroundColor Yellow
 Write-Host "up logs show" -ForegroundColor Yellow
-Write-Host "`nПерезапустите терминал, чтобы изменения вступили в силу" -ForegroundColor Yellow 
+Write-Host "`nRestart your terminal to apply the changes" -ForegroundColor Yellow 

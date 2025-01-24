@@ -8,19 +8,19 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 Set-Location $PSScriptRoot
 
 # Компилируем проект в релизном режиме
-Write-Host "Компиляция проекта..." -ForegroundColor Cyan
+Write-Host "Compiling the project..." -ForegroundColor Cyan
 cargo build --release
 
-# Создаем директорию для установки
+# Create the installation directory
 $installDir = "$env:ProgramFiles\UseProxy"
 if (-not (Test-Path $installDir)) {
     New-Item -ItemType Directory -Path $installDir | Out-Null
 }
 
-# Копируем исполняемый файл
+# Copy the executable file
 Copy-Item "target\release\useproxy.exe" -Destination "$installDir\up.exe" -Force
 
-# Добавляем путь в PATH если его там еще нет
+# Add the path to PATH if it's not already there
 $currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 if ($currentPath -notlike "*$installDir*") {
     [Environment]::SetEnvironmentVariable(
@@ -30,6 +30,6 @@ if ($currentPath -notlike "*$installDir*") {
     )
 }
 
-Write-Host "`nУстановка завершена!" -ForegroundColor Green
-Write-Host "UseProxy теперь доступен через команду 'up'" -ForegroundColor Green
-Write-Host "Перезапустите терминал, чтобы изменения вступили в силу" -ForegroundColor Yellow 
+Write-Host "`nInstallation complete!" -ForegroundColor Green
+Write-Host "UseProxy is now available via the 'up' command" -ForegroundColor Green
+Write-Host "Restart your terminal to apply the changes" -ForegroundColor Yellow 
