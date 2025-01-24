@@ -26,9 +26,9 @@ if ($asset) {
     Expand-Archive "useProxy.zip" -DestinationPath "."
 } else {
     Write-Host "Downloading repository..." -ForegroundColor Cyan
-    Invoke-WebRequest -Uri "https://github.com/$repo/archive/main.zip" -OutFile "useProxy.zip"
+    Invoke-WebRequest -Uri "https://github.com/$repo/archive/master.zip" -OutFile "useProxy.zip"
     Expand-Archive "useProxy.zip" -DestinationPath "."
-    Move-Item "useProxy-main/*" "." -Force
+    Move-Item "useProxy-master/*" "." -Force
 }
 
 # Создаем директорию для установки

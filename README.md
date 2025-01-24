@@ -17,15 +17,15 @@ useProxy - это мощный инструмент, который позвол
 ### Windows (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/SomeMedic/useProxy/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/SomeMedic/useProxy/master/install.ps1 | iex
 ```
 
 ### Ручная установка
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/SomeMedic/useproxy.git
-cd useproxy
+git clone https://github.com/SomeMedic/useProxy.git
+cd useProxy
 ```
 
 2. Запустите скрипт установки:

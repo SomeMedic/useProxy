@@ -18,7 +18,7 @@ if (-not (Test-Path $installDir)) {
 }
 
 # Copy the executable file
-Copy-Item "target\release\useproxy.exe" -Destination "$installDir\up.exe" -Force
+Copy-Item "target\release\useProxy.exe" -Destination "$installDir\up.exe" -Force
 
 # Add the path to PATH if it's not already there
 $currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
