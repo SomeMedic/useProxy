@@ -4,23 +4,55 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-# Переходим в директорию скрипта
-Set-Location $PSScriptRoot
+# Создаем временную директорию
+$tempDir = Join-Path $env:TEMP "UseProxy-Install"
+if (Test-Path $tempDir) {
+    Remove-Item -Path $tempDir -Recurse -Force
+}
+New-Item -ItemType Directory -Path $tempDir | Out-Null
 
-# Компилируем проект в релизном режиме
-Write-Host "Compiling the project..." -ForegroundColor Cyan
+# Переходим во временную директорию
+Set-Location $tempDir
+
+# Скачиваем и распаковываем архив с GitHub
+Write-Host "Скачивание UseProxy..." -ForegroundColor Cyan
+$repo = "SomeMedic/useProxy"
+$latest = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
+$asset = $latest.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
+
+if ($asset) {
+    $downloadUrl = $asset.browser_download_url
+    Invoke-WebRequest -Uri $downloadUrl -OutFile "useproxy.zip"
+    Expand-Archive "useproxy.zip" -DestinationPath "."
+} else {
+    Write-Host "Скачивание репозитория..." -ForegroundColor Cyan
+    Invoke-WebRequest -Uri "https://github.com/$repo/archive/master.zip" -OutFile "useproxy.zip"
+    Expand-Archive "useproxy.zip" -DestinationPath "."
+    Move-Item "useproxy-master/*" "." -Force
+}
+
+# Проверяем наличие Rust
+if (-not (Get-Command rustc -ErrorAction SilentlyContinue)) {
+    Write-Host "Установка Rust..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile "rustup-init.exe"
+    Start-Process -FilePath "rustup-init.exe" -ArgumentList "-y" -Wait
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+}
+
+# Компилируем проект
+Write-Host "Компиляция проекта..." -ForegroundColor Cyan
 cargo build --release
 
-# Create the installation directory
+# Создаем директорию для установки
 $installDir = "$env:ProgramFiles\UseProxy"
 if (-not (Test-Path $installDir)) {
     New-Item -ItemType Directory -Path $installDir | Out-Null
 }
 
-# Copy the executable file
-Copy-Item "target\release\useProxy.exe" -Destination "$installDir\up.exe" -Force
+# Копируем исполняемый файл
+Copy-Item "target\release\useproxy.exe" -Destination "$installDir\up.exe" -Force
 
-# Add the path to PATH if it's not already there
+# Добавляем путь в PATH если его там еще нет
 $currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 if ($currentPath -notlike "*$installDir*") {
     [Environment]::SetEnvironmentVariable(
@@ -30,6 +62,14 @@ if ($currentPath -notlike "*$installDir*") {
     )
 }
 
+# Очищаем временную директорию
+Set-Location $env:TEMP
+Remove-Item -Path $tempDir -Recurse -Force
+
 Write-Host "`nInstallation complete!" -ForegroundColor Green
-Write-Host "UseProxy is now available via the 'up' command" -ForegroundColor Green
-Write-Host "Restart your terminal to apply the changes" -ForegroundColor Yellow 
+Write-Host "You can now use the 'up' command from anywhere" -ForegroundColor Green
+Write-Host "`nExamples of commands:" -ForegroundColor Cyan
+Write-Host "up run --https" -ForegroundColor Yellow
+Write-Host "up proxy add `"/api/chat -> https://api.example.com`"" -ForegroundColor Yellow
+Write-Host "up logs show" -ForegroundColor Yellow
+Write-Host "`nRestart your terminal to apply the changes" -ForegroundColor Yellow 
