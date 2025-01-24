@@ -19,6 +19,14 @@ UseProxy - это мощный инструмент для локальной р
 
 ### Windows (PowerShell)
 
+Откройте PowerShell от имени администратора и выполните:
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/SomeMedic/useProxy/master/install.ps1'))
+```
+
+Или короче:
+
 ```powershell
 irm https://raw.githubusercontent.com/SomeMedic/useProxy/master/install.ps1 | iex
 ```
@@ -31,10 +39,12 @@ git clone https://github.com/SomeMedic/useProxy.git
 cd useProxy
 ```
 
-2. Запустите скрипт установки:
+2. Запустите PowerShell от имени администратора и выполните:
 ```powershell
 .\install.ps1
 ```
+
+После установки перезапустите терминал, чтобы использовать команду `up`.
 
 ## Использование
 
