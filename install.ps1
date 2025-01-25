@@ -34,48 +34,66 @@ try {
     Cleanup-AndExit "Не удалось создать временную директорию: $_"
 }
 
-# Скачиваем и распаковываем архив с GitHub
+# Скачиваем последний релиз
 Write-Host "Скачивание UseProxy..." -ForegroundColor Cyan
 $repo = "SomeMedic/useProxy"
 
 try {
-    Write-Host "Скачивание репозитория..." -ForegroundColor Cyan
-    $downloadUrl = "https://github.com/$repo/archive/master.zip"
-    Invoke-WebRequest -Uri $downloadUrl -OutFile "useproxy.zip"
-    Expand-Archive "useproxy.zip" -DestinationPath "." -Force
-    
-    # Находим директорию с исходным кодом
-    $sourceDir = Get-ChildItem -Directory | Where-Object { $_.Name -like "*useProxy-*" } | Select-Object -First 1
-    if (-not $sourceDir) {
-        throw "Не удалось найти директорию с исходным кодом"
+    # Получаем информацию о последнем релизе
+    $releases = Invoke-RestMethod "https://api.github.com/repos/$repo/releases"
+    if ($releases.Count -eq 0) {
+        throw "Релизы не найдены"
     }
+    $latest = $releases[0]
     
-    Set-Location $sourceDir.FullName
+    # Ищем бинарный файл для Windows
+    $asset = $latest.assets | Where-Object { $_.name -eq "up.exe" } | Select-Object -First 1
+    
+    if ($asset) {
+        # Скачиваем бинарный файл
+        Write-Host "Скачивание бинарного файла..." -ForegroundColor Cyan
+        Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "up.exe"
+    } else {
+        throw "Бинарный файл не найден в релизе"
+    }
 } catch {
-    Cleanup-AndExit "Ошибка при скачивании/распаковке: $_"
-}
-
-# Проверяем наличие Rust
-if (-not (Get-Command rustc -ErrorAction SilentlyContinue)) {
-    Write-Host "Установка Rust..." -ForegroundColor Yellow
+    Write-Host "Не удалось скачать бинарный файл: $_" -ForegroundColor Yellow
+    Write-Host "Переключаемся на компиляцию из исходников..." -ForegroundColor Yellow
+    
     try {
-        Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile "rustup-init.exe"
-        Start-Process -FilePath "rustup-init.exe" -ArgumentList "-y" -Wait
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        # Скачиваем исходный код
+        Invoke-WebRequest -Uri "https://github.com/$repo/archive/master.zip" -OutFile "useproxy.zip"
+        Expand-Archive "useproxy.zip" -DestinationPath "." -Force
+        
+        # Находим директорию с исходным кодом
+        $sourceDir = Get-ChildItem -Directory | Where-Object { $_.Name -like "*useProxy-*" } | Select-Object -First 1
+        if (-not $sourceDir) {
+            throw "Не удалось найти директорию с исходным кодом"
+        }
+        
+        Set-Location $sourceDir.FullName
+        
+        # Проверяем наличие Rust
+        if (-not (Get-Command rustc -ErrorAction SilentlyContinue)) {
+            Write-Host "Установка Rust..." -ForegroundColor Yellow
+            Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile "rustup-init.exe"
+            Start-Process -FilePath "rustup-init.exe" -ArgumentList "-y" -Wait
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        }
+        
+        # Компилируем проект
+        Write-Host "Компиляция проекта..." -ForegroundColor Cyan
+        cargo build --release
+        
+        if (-not (Test-Path "target/release/useproxy.exe")) {
+            throw "Не удалось найти скомпилированный файл"
+        }
+        
+        Copy-Item "target/release/useproxy.exe" -Destination "../up.exe" -Force
+        Set-Location ..
     } catch {
-        Cleanup-AndExit "Ошибка при установке Rust: $_"
+        Cleanup-AndExit "Ошибка при компиляции: $_"
     }
-}
-
-# Компилируем проект
-Write-Host "Компиляция проекта..." -ForegroundColor Cyan
-try {
-    cargo build --release
-    if (-not (Test-Path "target/release/useproxy.exe")) {
-        throw "Не удалось найти скомпилированный файл"
-    }
-} catch {
-    Cleanup-AndExit "Ошибка при компиляции: $_"
 }
 
 # Создаем директорию для установки
@@ -84,7 +102,7 @@ try {
     if (-not (Test-Path $installDir)) {
         New-Item -ItemType Directory -Path $installDir | Out-Null
     }
-    Copy-Item "target/release/useproxy.exe" -Destination "$installDir\up.exe" -Force
+    Copy-Item "up.exe" -Destination "$installDir\up.exe" -Force
 } catch {
     Cleanup-AndExit "Ошибка при копировании файлов: $_"
 }
