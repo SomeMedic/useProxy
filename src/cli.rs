@@ -80,9 +80,11 @@ pub enum Commands {
 
 #[derive(Subcommand)]
 pub enum ProxyCommands {
-    /// Добавить новое правило (Пример: up proxy add /api/github -> https://api.github.com)
+    /// Добавить новое правило
+    /// Пример: up proxy add "/api/github -> https://api.github.com"
+    /// Важно: правило должно быть в кавычках!
     Add {
-        /// Правило в формате "путь -> целевой_url"
+        /// Правило в формате "путь -> целевой_url" (в кавычках)
         rule: String,
         
         /// Изменять Origin заголовок
